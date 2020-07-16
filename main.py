@@ -2,6 +2,7 @@ import os
 
 import requests
 import bs4
+import openpyxl
 
 def main(vacancy):
     ''' Печатает информацию о вакансии в файл по следующему образцу:
@@ -15,8 +16,10 @@ def main(vacancy):
                пропускает вакансию).
             4) Записывает необходимую информацию в файл.
     '''
-    file_vacancies = open('salaries/'+vacancy+'.txt', 'w')
-    hrefs = get_href(vacancy, 10)
+    companies = []
+    vacancy_names = []
+    salaries =[]
+    hrefs = get_href(vacancy, 50)
     for href in hrefs:
         res = requests.get(href)
         vacancy_page = bs4.BeautifulSoup(res.text)
@@ -54,13 +57,12 @@ def main(vacancy):
         
         vacancy_name = vacancy_name[0].getText().replace('\t', '').replace('\n', '')
         
-        full_string = (str(company) + ' - ' + str(vacancy_name) + ' - '
-            + str(salary) + '\n' )
-            
-                    
-        file_vacancies.write(full_string)
+        companies.append(str(company))
+        vacancy_names.append(str(vacancy_name))
+        salaries.append(str(salary))
+    
+    add_excel(vacancy, companies, vacancy_names, salaries)    
     print('\a')
-    file_vacancies.close()
     
 def get_href(search, quantity = 1):
     ''' Возращает сслыки на первые quantity ответов, которые
@@ -87,6 +89,20 @@ def get_href(search, quantity = 1):
             
         page_num += 1
     return hrefs
+    
+def add_excel(vacancy, companies, vacancy_names, salaries):
+    ''' Выводит информацию в файл excel. '''
+    wb = openpyxl.load_workbook('template.xlsx')
+    print(wb.sheetnames)
+    sheet = wb['Sheet']
+    for row in range(35):
+        try:
+            sheet['F' + str(row+5)] = companies[row]
+            sheet['B' + str(row+5)] = vacancy_names[row]
+            sheet['C' + str(row+5)] = salaries[row]
+        except:
+            break
+    wb.save(vacancy + '.xlsx')
 
 while True:
     print("Чтобы выйти нажмите Ctrl+C")
