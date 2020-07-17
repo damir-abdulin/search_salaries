@@ -15,7 +15,7 @@ log_format  = ('%(filename)s[LINE:%(lineno)d] - [%(asctime)s] | ' +
     '#%(levelname)s:\t%message)s')
 logging.basicConfig(
     filename=log_name,
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='[LINE:%(lineno)d][%(asctime)s] # %(levelname)s -- %(message)s'
     )
 
@@ -36,7 +36,7 @@ def main(vacancy):
     companies = []
     vacancy_names = []
     salaries =[]
-    hrefs = get_href(vacancy, 10)
+    hrefs = get_href(vacancy, 50)
     for href in hrefs:
         res = requests.get(href)
         vacancy_page = bs4.BeautifulSoup(res.text)
@@ -120,16 +120,19 @@ def get_href(search, quantity = 1):
     
 def add_excel(vacancy, companies, vacancy_names, salaries):
     ''' Выводит информацию в файл excel. '''
-    wb = openpyxl.load_workbook('salaries\template.xlsx')
-    print(wb.sheetnames)
-    for row in range(35):
+    wb = openpyxl.load_workbook('template.xlsx')
+    sheet = wb['Sheet']
+    for row in range(len(vacancy_names)):
         try:
             sheet['F' + str(row+5)] = companies[row]
             sheet['B' + str(row+5)] = vacancy_names[row]
             sheet['C' + str(row+5)] = salaries[row]
         except:
+            logging.error("Ошибка записи в строку " + str(row+5))
             break
     wb.save('salaries\\' + vacancy + '.xlsx')
+    logging.debug("Запись в файл salaries\\" + vacancy +
+        ".xlsx завершена")
 
 logging.debug("Старт программы")
 while True:
