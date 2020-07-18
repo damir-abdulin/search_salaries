@@ -18,66 +18,57 @@ logging.basicConfig(
     level=logging.INFO,
     format='[LINE:%(lineno)d][%(asctime)s] # %(levelname)s -- %(message)s'
     )
+logging.disable(logging.DEBUG)
 
 def main(vacancy):
-    ''' Печатает информацию о вакансии в файл по следующему образцу:
-        название компании - название вакансии - з/п
-        
-        Принцип работы:
-            1) Производит поиск подходящей вакансии.
-            2) Собирает сслыки на 50 первых вакансий.
-            3) Циклом проходит каждую вакансию и собирает
-               необходимую информацию (если чего-то нет, то
-               пропускает вакансию).
-            4) Записывает необходимую информацию в файл.
+    ''' Вызывает необходимые функции для обработки запроса
+        на вакансию.
     '''
     logging.debug("Старт основной функции по запросу: " + vacancy)
     
     companies = []
     vacancy_names = []
     salaries =[]
+    
     hrefs = get_href(vacancy, 50)
     for href in hrefs:
+        logging.debug("Обработка ссылки " + href)
         res = requests.get(href)
         vacancy_page = bs4.BeautifulSoup(res.text)
         
-        salary = vacancy_page.select('.vacancy__salary')
+        salary = get_info(vacancy_page, '.vacancy__salary')
         
         # Проверяет, указанна ли зарплата.
-        if salary == []:
-            # З/п не указанна, значит вакансия пропускается.
-            logging.warning("Нет информации о зарплате. Вакансия:\n\t" +
-                href)
+        if not salary:
             continue
             
         salary = (salary[0].getText().replace('\t', '').
             replace('\n', '').replace(' ', '').replace('руб.', '').
             replace('ивыше', '').replace('\xa0', ''))
             
-        company = vacancy_page.select('.org-info__item a')
+        company = get_info(vacancy_page, '.org-info__item a')
 
         # Проверяет, указанна ли компания.
-        if company == []:
-            # Компания не указанна, значит вакансия пропускается.
-            logging.warning("Нет информации о компании. Вакансия:\n\t" +
-                href)
+        if not company:
             continue
             
-        company = company[0].getText().replace('\t', '').replace('\n', '')
+        company = (company[0].getText().replace('\t', '').
+            replace('\n', ''))
         
-        vacancy_name = vacancy_page.select('.vacancy__title')
+        vacancy_name = get_info(vacancy_page, '.vacancy__title')
 
         # Проверяет, указанно ли название вакансии.
-        if vacancy_name == []:
-            # Вакансия не указанна, значит вакансия пропускается.
-            logging.warning("Нет информации об имени вакансии." +
-                "Вакансия:\n\t" + href)
+        if not vacancy_name:
             continue
         
-        vacancy_name = vacancy_name[0].getText().replace('\t', '').replace('\n', '')
+        vacancy_name = (vacancy_name[0].getText().replace('\t', '').
+            replace('\n', ''))
+            
         companies.append(str(company))
         vacancy_names.append(str(vacancy_name))
         salaries.append(str(salary))
+        logging.debug("Данные по ссылки %s добавлены в массивы" %
+            (href))
     
     add_excel(vacancy, companies, vacancy_names, salaries)
     print('\a')
@@ -103,7 +94,7 @@ def get_href(search, quantity = 1):
         
         if pages == []: # нет вакансий
             logging.debug("Больше нет доступных ссылок")
-            logging.debug("Ссылка на вакансии извлечены")
+            logging.info("Ссылки на вакансии извлечены")
             return hrefs
         
         for page in pages:
@@ -113,10 +104,28 @@ def get_href(search, quantity = 1):
                 str(add_vacancy))
             
             if add_vacancy >= quantity:
-                logging.debug("Ссылки на вакансии извлечены")
+                logging.info("Ссылки на вакансии извлечены")
                 return hrefs
             
         page_num += 1
+        
+def get_info(page, tag):
+    ''' Извлекает данные из страницы page, которые
+        соотвествуют запоросу tag. Если таких данных нет, то
+        возращает None.
+        
+        Аргументы:
+            page -- информация о странице.
+                type(page) == <class 'bs4.BeautifulSoup'>
+            tag -- по каким css-селекторам искать?
+                type(tag) == str
+    '''
+    info = page.select(tag)
+    
+    if info == []:
+        logging.info("На странице нет данных по тегу " + tag)
+        return None
+    return info
     
 def add_excel(vacancy, companies, vacancy_names, salaries):
     ''' Выводит информацию в файл excel. '''
@@ -131,11 +140,12 @@ def add_excel(vacancy, companies, vacancy_names, salaries):
             logging.error("Ошибка записи в строку " + str(row+5))
             break
     wb.save('salaries\\' + vacancy + '.xlsx')
-    logging.debug("Запись в файл salaries\\" + vacancy +
+    logging.info("Запись в файл salaries\\" + vacancy +
         ".xlsx завершена")
 
-logging.debug("Старт программы")
+logging.info("Старт программы")
 while True:
     print("Чтобы выйти нажмите Ctrl+C")
     vacancy = input("Введите название вакансии: ")
+    logging.debug("Полученная вакансия: " + vacancy)
     main(vacancy)
