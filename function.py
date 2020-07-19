@@ -1,6 +1,11 @@
 # Содержит общие функции для search_salaries.
 import openpyxl
 
+# Запускает логирование.
+import logging
+
+logger = logging.getLogger(__name__)
+
 def get_info(page, tag):
     ''' Извлекает данные из страницы page, которые
         соотвествуют запоросу tag. Если таких данных нет, то
@@ -12,6 +17,7 @@ def get_info(page, tag):
             tag -- по каким css-селекторам искать?
                 type(tag) == str
     '''
+    logger.info("All good")
     info = page.select(tag)
     
     if info == []:

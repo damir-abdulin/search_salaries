@@ -6,7 +6,7 @@ class Settings():
         self.log_format = ('[LINE:%(lineno)d][%(asctime)s] # ' + 
             '%(levelname)s (%(name)s): %(message)s')
     
-    def get_logs_name():
+    def get_logs_filename(self):
         """ Вычисляет название для лог-файла. """
         import datetime
         
@@ -19,6 +19,6 @@ class Settings():
         import logging
 
         logging.basicConfig(
-            filename=get_logs_filename(),
+            filename=self.get_logs_filename(),
             level=logging.INFO,
             format=self.log_format)
