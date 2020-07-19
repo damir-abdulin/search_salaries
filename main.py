@@ -83,6 +83,7 @@ def get_href(search, quantity = 1):
     hrefs = []
     page_num = 1 # номер страницы.
     add_vacancy = 0 # сколько вакансий добавленнл
+    
     while True:
         logging.debug("Обработка страницы: " + str(page_num))
         res = requests.get('https://praca.by/search/vacancies/'+
