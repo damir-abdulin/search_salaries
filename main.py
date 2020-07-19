@@ -129,6 +129,8 @@ def get_info(page, tag):
     
 def add_excel(vacancy, companies, vacancy_names, salaries):
     ''' Выводит информацию в файл excel. '''
+    logging.info("Загрузка в файл salaries\\" + vacancy +
+        ".xlsx началась")
     wb = openpyxl.load_workbook('template.xlsx')
     sheet = wb['Sheet']
     for row in range(len(vacancy_names)):
