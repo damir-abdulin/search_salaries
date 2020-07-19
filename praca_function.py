@@ -3,6 +3,12 @@ import requests
 import bs4
 
 import function
+import settings
+
+# Запускает логирование.
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_hrefs(vacancy, quantity=10):
     """ Находит ссылки, с которых будет собираться информация.
@@ -10,6 +16,7 @@ def get_hrefs(vacancy, quantity=10):
         Выводит первые quantity ссылок, которые возращаются
         через поисковой запрос на сайте praca.by по слову vacancy.
     """
+    logger.info("All good")
     hrefs = []
     page_num = 1 # номер страницы.
     add_vacancy = 0 # сколько вакансий добавленно.

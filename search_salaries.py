@@ -1,30 +1,20 @@
-import os
-
-import requests
-import bs4
-import openpyxl
-
+import praca_function as praca
 import function
 
-import praca_function as praca
+from settings import Settings
+
+# Подключение настроек.
+s = Settings()
 
 # Запускает логирование.
 import logging
-import datetime
 
-today = datetime.date.today()
-log_name = 'logs\\' + today.strftime("%d-%m-%Y") +  '.log'
+s.start_logging()
 
-log_format  = ('%(filename)s[LINE:%(lineno)d] - [%(asctime)s] | ' +
-    '#%(levelname)s:\t%message)s')
-logging.basicConfig(
-    filename=log_name,
-    level=logging.INFO,
-    format='[LINE:%(lineno)d][%(asctime)s] # %(levelname)s -- %(message)s'
-    )
+logger = logging.getLogger(__name__)
 logging.disable(logging.DEBUG)
 
-logging.info("Старт программы")
+logger.info("Старт программы")
 while True:
     print("Чтобы выйти нажмите Ctrl+C")
     vacancy = input("Введите название вакансии: ")
