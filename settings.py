@@ -8,7 +8,17 @@ class Settings():
         self.log_format = ('[LINE:%(lineno)d][%(asctime)s] # ' + 
             '%(levelname)s (%(name)s): %(message)s')
         self.log_dir = 'logs'
-    
+        
+        # Настройки запросов.
+        self.headers = {'user-agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) ' + 
+            'Chrome/53.0.2785.143 ' + 
+            'Safari/537.36'}
+            
+        # Настройки сайтов.
+        self.sites = 'praca'
+        
     def get_logs_filename(self):
         """ Вычисляет название для лог-файла. """
         import datetime
@@ -24,7 +34,7 @@ class Settings():
 
         logging.basicConfig(
             filename=self.get_logs_filename(),
-            level=logging.INFO,
+            level=logging.DEBUG,
             format=self.log_format)
     
     def delete_logs(self):
@@ -66,3 +76,8 @@ class Settings():
         elder_file = directory + '\\' + elder_file
         os.chdir('..')
         return elder_file
+    
+    def stop_program(self):
+        """ Завершает работу программы. """
+        import sys
+        sys.exit()

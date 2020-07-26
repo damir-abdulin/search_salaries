@@ -14,7 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def get_hrefs(vacancy, quantity=10):
+def get_hrefs(city, vacancy, quantity=10):
     """ Находит ссылки, с которых будет собираться информация.
         
         Выводит первые quantity ссылок, которые возращаются
@@ -28,8 +28,9 @@ def get_hrefs(vacancy, quantity=10):
     while True:
         res = requests.get('https://praca.by/search/vacancies/'+
             '?page='+ str(page_num) +'&search[query]=' + vacancy +
+            '&search[city][' + city + ']=1' +
             '&search[query-text-params][headline]=0&form-submit-btn=' +
-            'Найти')
+            'Найти', headers=s.headers, timeout=1)
         if res.status_code == 200:
             logger.debug("Страница %s успешно получена" % (res.url))
         else:
@@ -60,7 +61,7 @@ def get_hrefs(vacancy, quantity=10):
 def extraction_information(href):
     """ Извлекает необходимую информацию с ссылки href. """
     logger.debug("Начало работы функции extraction_information")
-    res = requests.get(href)
+    res = requests.get(href, headers=s.headers, timeout=1)
     
     if res.status_code == 200:
         logger.debug("Страница %s успешно получена" % (res.url))
@@ -102,31 +103,3 @@ def extraction_information(href):
     
     logger.debug("Завершение работы функции extraction_information")
     return company, vacancy_name, salary
-
-def make_excel_file(vacancy):
-    """ Создает файл excel по вакансиям с сайта praca.by """
-    logger.debug("Начало работы функции make_excel_file")
-    companies = []
-    vacancy_names = []
-    salaries =[]
-    vacancies_hrefs = []
-    
-    hrefs = get_hrefs(vacancy, 50)
-    for href in hrefs:
-        logger.debug("Обработка ссылки " + href)
-        try:
-            company, vacancy_name, salary = extraction_information(href)
-        except:
-            continue
-        
-        companies.append(str(company))
-        vacancy_names.append(str(vacancy_name))
-        salaries.append(str(salary))
-        vacancies_hrefs.append(href)
-        logger.debug("Информация добавлена")
-    
-    logger.info("Вся нужная информация с сайта praca.by собрана")
-    function.add_excel(vacancy, companies, vacancy_names, salaries,
-        vacancies_hrefs)
-    logger.debug("Завершение работы функции make_excel_file")
-        
